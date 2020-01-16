@@ -9,8 +9,14 @@ var routes = require('./routes/routes');
 // variable to enable global error logging
 const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
 
+// load cors support module
+const cors = require('cors');
+
 // create the Express app
 const app = express();
+
+// enable cors support
+app.use(cors());
 
 // setup morgan which gives us http request logging
 app.use(morgan('dev'));
