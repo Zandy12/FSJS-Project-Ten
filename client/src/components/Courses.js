@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { NavLink } from 'react-router-dom';
 import { Markup } from 'interweave';
 import axios from 'axios';
 
@@ -43,15 +42,6 @@ export default class Courses extends Component {
     render() {
         return(
             <div>
-                <div className="header">
-                    <div className="bounds">
-                        <h1 className="header--logo">Courses</h1>
-                        <nav>
-                            <NavLink className="signup" to="/signup">Sign Up</NavLink>
-                            <NavLink className="signin" to="/signin">Sign In</NavLink>
-                        </nav>
-                    </div>
-                </div>
                 <hr />
                 <div className="bounds">
                     <Markup content={ this.renderCourses()} />

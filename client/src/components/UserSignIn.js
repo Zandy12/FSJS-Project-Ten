@@ -1,31 +1,95 @@
 import React, { Component } from 'react';
+import {Link} from 'react-router-dom';
+import Form from './Form';
+
 
 export default class UserSignIn extends Component {
+
+    state = {
+      emailAddress: '',
+      password: '',
+      errors: [],
+    }
+
     render() {
+
+        const {
+          emailAddress,
+          password,
+          errors,
+        } = this.state;
+
         return(
           <div>
-            <div class="header">
-              <div class="bounds">
-                <h1 class="header--logo">Courses</h1>
-                <nav><a class="signup" href="/signup">Sign Up</a><a class="signin" href="/signin">Sign In</a></nav>
-              </div>
-            </div>
             <hr />
-            <div class="bounds">
-              <div class="grid-33 centered signin">
+            <div className="bounds">
+              <div className="grid-33 centered signin">
                 <h1>Sign In</h1>
-                <div>
-                  <form>
-                    <div><input id="emailAddress" name="emailAddress" type="text" class="" placeholder="Email Address" value="" /></div>
-                    <div><input id="password" name="password" type="password" class="" placeholder="Password" value="" /></div>
-                    <div class="grid-100 pad-bottom"><button class="button" type="submit">Sign In</button><button class="button button-secondary" onclick="event.preventDefault(); location.href='/';">Cancel</button></div>
-                  </form>
-                </div>
-                <p>&nbsp;</p>
-                <p>Don't have a user account? <a href="/signup">Click here</a> to sign up!</p>
+                <Form 
+                  cancel={this.cancel}
+                  errors={errors}
+                  submit={this.submit}
+                  submitButtonText="Sign In"
+                  elements={() => (
+                    <React.Fragment>
+                      <input 
+                        id="emailAddress" 
+                        name="emailAddress" 
+                        type="text"
+                        value={emailAddress} 
+                        onChange={this.change} 
+                        placeholder="Email Address" />
+                      <input 
+                        id="password" 
+                        name="password"
+                        type="password"
+                        value={password} 
+                        onChange={this.change} 
+                        placeholder="Password" />                
+                    </React.Fragment>
+                  )} />
+                <p>
+                  Don't have a user account? <Link to="/signup">Click here</Link> to sign up!
+                </p>
               </div>
             </div>
           </div>
         );
     }
+
+    change = (event) => {
+      const name = event.target.name;
+      const value = event.target.value;
+  
+      this.setState(() => {
+        return {
+          [name]: value
+        };
+      });
+    }
+  
+    submit = () => {
+      const { context } = this.props;
+      const { emailAddress, password } = this.state;
+      context.actions.signIn(emailAddress, password)
+        .then( user => {
+          if (user === null) {
+            this.setState(() => {
+              return { errors: [ 'Sign-in was unsuccessful' ] };
+            });
+          } else {
+            console.log(`SUCCESS! ${emailAddress} is now signed in!`);
+            this.props.history.push('/courses/create');
+          }
+        })
+        .catch( err => {
+          console.log(err);
+          this.props.history.push('/error');
+        }) 
+    }
+  
+    cancel = () => {
+      this.props.history.push('/');
+    }
+
 }
