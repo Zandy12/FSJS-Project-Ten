@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Markup } from 'interweave';
+import {Link} from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 import axios from 'axios';
 
 export default class Courses extends Component {
@@ -7,9 +8,12 @@ export default class Courses extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            content: [],
+            firstName: '',
+            lastName: '',
+            content: []
         }
-        this.renderCourse.bind(this);
+        this.delete = this.delete.bind(this);
+        this.update = this.update.bind(this);
     }
 
     componentDidMount() {
@@ -17,6 +21,8 @@ export default class Courses extends Component {
       .then(res => {
           this.setState({
             content: res.data,
+            firstName: res.data.User.firstName,
+            lastName: res.data.User.lastName
           }) 
         }
       )
@@ -25,56 +31,118 @@ export default class Courses extends Component {
       });    
     }
 
-    renderCourse() {
-        let course = `
-                <hr />
-                <div class="actions--bar">
-                    <div class="bounds">
-                        <div class="grid-100">
-                            <span>
-                                <a class="button" href="/courses/${this.props.match.params.id}/update">Update Course</a>
-                                <a class="button" href="#">Delete Course</a>
-                            </span>
-                            <a class="button button-secondary" href="/">Return to List</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="bounds course--detail">
-                    <div class="grid-66">
-                        <div class="course--header">
-                            <h4 class="course--label">Course</h4>
-                            <h3 class="course--title">${this.state.content.title}</h3>
-                            <p>By Joe Smith</p>
-                        </div>
-                        <div class="course--description">
-                            ${this.state.content.description}
-                        </div>
-                    </div>
-                </div>
-                <div class="grid-25 grid-right">
-                    <div class="course--stats">
-                        <ul class="course--stats--list">
-                            <li class="course--stats--list--item">
-                                <h4>Estimated Time</h4>
-                                <h3>${this.state.content.estimatedTime}</h3>
-                            </li>
-                            <li class="course--stats--list--item">
-                                <h4>Materials Needed</h4>
-                                <ul>
-                                    <li>${this.state.content.materialsNeeded}</li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </div>
-                </div>`;
-        return course; 
+    delete() {
+        const { context } = this.props;
+    
+        const authUser = context.authenticatedUser;
+    
+        const id = this.props.match.params.id;
+
+        context.data.getCourse(id)
+            .then( course => {
+                if (course === null ) {
+                    this.setState(() => {
+                        return { errors: [ 'Unable to connect to server.' ] };
+                    });
+                } else {
+                    if (authUser.emailAddress === course.User.emailAddress) {
+                        // Fix password authentication
+                        context.data.deleteCourse(this.props.match.params.id, authUser.emailAddress, context.password)
+                            .then( errors => {
+                                if (errors.length) {
+                                this.setState({errors});
+                                } else {
+                                    console.log(`Course "${this.state.content.title}" has been successfully deleted.`);
+                                    this.props.history.push('/'); 
+                                } 
+                            })
+                            .catch( err => { // handle rejected promises
+                                console.log(err);
+                                this.props.history.push('/error'); // push to history stack
+                            });
+                        } else {
+                            this.props.history.push('/forbidden');
+                        }
+                    }
+                })
+            .catch( err => {
+                console.log(err);
+                this.props.history.push('/error');
+            }) 
+    }
+
+    update() {
+
+        const { context } = this.props;
+    
+        const authUser = context.authenticatedUser;
+    
+        const id = this.props.match.params.id;
+        
+        context.data.getCourse(id)
+            .then( course => {
+                if (course === null ) {
+                    this.setState(() => {
+                        return { errors: [ 'Unable to connect to server.' ] };
+                    });
+                } else {
+                    if (authUser.emailAddress === course.User.emailAddress) {
+                        this.props.history.push(`/courses/${this.props.match.params.id}/update`); 
+                    } else {
+                        this.props.history.push('/forbidden');
+                    }
+                }
+            })
+            .catch( err => {
+                console.log(err);
+                this.props.history.push('/error');
+            }) 
+    
     }
 
     render() {
+
         return(
             <div>
-                <Markup content={this.renderCourse()} />
-            </div>
+                <hr />
+                <div className="actions--bar">
+                    <div className="bounds">
+                        <div className="grid-100">
+                            <span>
+                                <Link className="button" onClick={this.update} to="#">Update Course</Link>
+                                <Link className="button" onClick={this.delete} to="#">Delete Course</Link>
+                            </span>
+                            <Link className="button button-secondary" to="/">Return to List</Link>
+                        </div>
+                    </div>
+                </div>
+                <div className="bounds course--detail">
+                    <div className="grid-66">
+                        <div className="course--header">
+                            <h4 className="course--label">Course</h4>
+                            <h3 className="course--title">{this.state.content.title}</h3>
+                            <p>By {this.state.firstName} {this.state.lastName}</p>
+                        </div>
+                        <div className="course--description">
+                            {this.state.content.description}
+                        </div>
+                    </div>
+                </div>
+                <div className="grid-25 grid-right">
+                    <div className="course--stats">
+                        <ul className="course--stats--list">
+                            <li className="course--stats--list--item">
+                                <h4>Estimated Time</h4>
+                                <h3>{this.state.content.estimatedTime}</h3>
+                            </li>
+                            <li className="course--stats--list--item">
+                                <h4>Materials Needed</h4>
+                                <ReactMarkdown source={this.state.content.materialsNeeded} />
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>       
         );
     }
 }

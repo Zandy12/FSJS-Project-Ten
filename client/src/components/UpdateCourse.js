@@ -1,4 +1,5 @@
 import React from 'react';
+import Form from './Form';
 import axios from 'axios';
 
 export default class CreateCourse extends React.Component {
@@ -6,79 +7,170 @@ export default class CreateCourse extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            content: [],
+            title: '',
+            description: '',
+            estimatedTime: '',
+            materialsNeeded: '',
+            firstName: '',
+            lastName: '',
+            errors: [],   
         }
     }
 
     componentDidMount() {
-      axios.get(`http://localhost:5000/api/courses/${this.props.match.params.id}`)
-      .then(res => {
-          this.setState({
-            content: res.data,
-          }) 
-        }
-      )
-      .catch(error => {
-      console.log("Error fetching and parsing data", error);
-      });    
+        axios.get(`http://localhost:5000/api/courses/${this.props.match.params.id}`)
+            .then(res => {
+                this.setState({
+                    title: res.data.title,
+                    description: res.data.description,
+                    estimatedTime: res.data.estimatedTime,
+                    materialsNeeded: res.data.materialsNeeded,
+                    firstName: res.data.User.firstName,
+                    lastName: res.data.User.lastName
+                }) 
+              }
+            )
+            .catch(error => {
+            console.log("Error fetching and parsing data", error);
+            });   
     }
 
     render() {
+        const {
+            title,
+            description,
+            estimatedTime,
+            materialsNeeded,
+            firstName,
+            lastName,
+            errors
+        } = this.state;
+
         return(
             <div>
                 <hr />
                 <div className="bounds course--detail">
-                    <h1>Create Course</h1>
-                    <div>
-                        <div>
-                            <h2 className="validation--errors--label">Validation errors</h2>
-                            <div className="validation-errors">
-                                <ul>
-                                    <li>Please provide a value for "Title"</li>
-                                    <li>Please provide a value for "Description"</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <form>
-                        <div className="grid-66">
-                            <div className="course--header">
-                                <h4 className="course--label">Course</h4>
-                                <div>
-                                    <input id="title" name="title" type="text" className="input-title course--title--input"
-                                        value={this.state.content.title} />
-                                </div>
-                                <p>By Jose Castro</p>
-                            </div>
-                            <div className="course--description">
-                                <div>
-                                    <textarea id="description" name="description" className="" value={this.state.content.description} />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="grid-25 grid-right">
-                            <div className="course--stats">
-                                <ul className="course--stats--list">
-                                    <li className="course--stats--list--item">
-                                    <h4>Estimated Time</h4>
-                                    <div>
-                                        <input id="estimatedTime" name="estimatedTime" type="text" className="course--time--input"
-                                            value={this.state.content.estimatedTime} />
-                                    </div>
-                                    </li>
-                                    <li className="course--stats--list--item">
-                                        <h4>Materials Needed</h4>
+                    <h1>Update Course</h1>
+                    <Form 
+                        cancel={this.cancel}
+                        errors={errors}
+                        submit={this.submit}
+                        submitButtonText="Update Course"
+                        elements={() => (
+                            <div>
+                                <div className="grid-66">
+                                    <div className="course--header">
+                                        <h4 className="course--label">Course</h4>
                                         <div>
-                                            <textarea id="materialsNeeded" name="materialsNeeded" className="" value={this.state.content.materialsNeeded} />
+                                            <input 
+                                                id="title" 
+                                                name="title" 
+                                                type="text"
+                                                value={title || ''} 
+                                                onChange={this.change} 
+                                                className="input-title course--title--input"/>
                                         </div>
-                                    </li>
-                                </ul>
+                                        <p>By {firstName} {lastName}</p>
+                                    </div>
+                                    <div className="course--description">
+                                        <div>
+                                            <textarea 
+                                                id="description" 
+                                                name="description" 
+                                                type="text"
+                                                value={description || ''} 
+                                                onChange={this.change} 
+                                                className="" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="grid-25 grid-right">
+                                    <div className="course--stats">
+                                        <ul className="course--stats--list">
+                                            <li className="course--stats--list--item">
+                                                <h4>Estimated Time</h4>
+                                                <div>
+                                                    <input 
+                                                        id="estimatedTime" 
+                                                        name="estimatedTime" 
+                                                        type="text"
+                                                        value={estimatedTime || ''} 
+                                                        onChange={this.change}
+                                                        className="course--time--input" />
+                                                </div>
+                                            </li>
+                                            <li className="course--stats--list--item">
+                                                <h4>Materials Needed</h4>
+                                                <div>
+                                                    <textarea 
+                                                        id="materialsNeeded" 
+                                                        name="materialsNeeded" 
+                                                        type="text"
+                                                        value={materialsNeeded || ''} 
+                                                        onChange={this.change} 
+                                                        className="" />
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div className="grid-100 pad-bottom"><button className="button" type="submit">Create Course</button><button className="button button-secondary" onClick={"event.preventDefault(); location.href='/courses/" + this.props.match.params.id + "';"}>Cancel</button></div>
-                        </form>
-                    </div>
+                        )} />
                 </div>
             </div>          
         );
+    }
+
+    change = (event) => {
+        const name = event.target.name;
+        const value = event.target.value;
+  
+        this.setState(() => {
+          return {
+            [name]: value
+          };
+        });
+    }
+  
+    submit = () => {
+        
+        const { context } = this.props;
+        
+        const {
+          title,
+          description,
+          estimatedTime,
+          materialsNeeded,
+        } = this.state;
+  
+        // New course payload
+        const course = {
+            title,
+            description,
+            estimatedTime,
+            materialsNeeded
+        }
+
+        const authUser = context.authenticatedUser;
+
+        // Fix password authentication
+        context.data.updateCourse(course, this.props.match.params.id, authUser.emailAddress, context.password)
+          .then( errors => {
+            if (errors.length) {
+              this.setState({errors});
+            } else {
+              console.log(`Course "${title}" has been successfully updated!`);
+              this.props.history.push('/courses/' + this.props.match.params.id); 
+            } 
+          })
+          .catch( err => { // handle rejected promises
+              console.log(err);
+              this.props.history.push('/error'); // push to history stack
+          });
+  
+    }
+  
+    cancel = () => {
+        this.props.history.push('/courses/' + this.props.match.params.id);
     }
 }

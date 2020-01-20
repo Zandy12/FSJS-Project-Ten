@@ -86,7 +86,9 @@ export default class UserSignUp extends Component {
     }
 
     submit = () => {
+
       const { context } = this.props;
+      
       const {
         firstName,
         lastName,
@@ -108,6 +110,10 @@ export default class UserSignUp extends Component {
             this.setState({errors});
           } else {
             console.log(`${firstName} is successfully signed up and authenticated!`);
+            context.actions.signIn(emailAddress, password)
+              .then(() => {
+                this.props.history.push('/');
+              })
           } 
         })
         .catch( err => { // handle rejected promises

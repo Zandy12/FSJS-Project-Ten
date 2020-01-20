@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Cookies from 'js-cookie';
 import Data from './Data';
 
 const Context = React.createContext(); 
@@ -9,19 +10,23 @@ export class Provider extends Component {
     super();
     this.data = new Data();
     this.state = {
-      authenticatedUser: null,
+      authenticatedUser: Cookies.getJSON('authenticatedUser') || null,
+      password: Cookies.getJSON('password') || null,
     }
   }
 
   render() {
 
     const { authenticatedUser } = this.state;
+    const { password } = this.state;
 
     const value = {
       authenticatedUser,
+      password,
       data: this.data,
       actions: { // Add the 'actions' property and object
-        signIn: this.signIn
+        signIn: this.signIn,
+        signOut: this.signOut
       }
     }
 
@@ -39,14 +44,26 @@ export class Provider extends Component {
       this.setState(() => {
         return {
           authenticatedUser: user,
+          password: password,
         };
       });
+      // Set cookie
+      Cookies.set('authenticatedUser', JSON.stringify(user), { expires: 1 });
+      Cookies.set('password', JSON.stringify(password), { expires: 1 });
     }
     return user;
   }
 
+  // Function to sign-out a user
   signOut = () => {
-
+    this.setState(() => {
+      return {
+        authenticatedUser: null,
+        password: null,
+      };
+    });
+    Cookies.remove('authenticatedUser');
+    Cookies.remove('password');
   }
 }
 
