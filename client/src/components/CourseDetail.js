@@ -46,7 +46,6 @@ export default class Courses extends Component {
                     });
                 } else {
                     if (authUser.emailAddress === course.User.emailAddress) {
-                        // Fix password authentication
                         context.data.deleteCourse(this.props.match.params.id, authUser.emailAddress, context.password)
                             .then( errors => {
                                 if (errors.length) {

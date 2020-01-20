@@ -142,7 +142,6 @@ export default class CreateCourse extends Component {
 
         console.log(context);
 
-        // Fix password authentication
         context.data.createCourse(course, authUser.emailAddress, context.password)
           .then( errors => {
             if (errors.length) {

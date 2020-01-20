@@ -1,5 +1,8 @@
+// Import react
 import React from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+
+// Components
 import Courses from './Courses';
 import CourseDetail from './CourseDetail';
 import CreateCourse from './CreateCourse';
@@ -15,11 +18,18 @@ import withContext from '../Context';
 import PrivateRoute from '../PrivateRoute';
 import '../css/global.css';
 
+/*************************** 
+  COMPONENTS WITH CONTEXT 
+****************************/
+
 // Connect the Header component to context
 const HeaderWithContext = withContext(Header);
+
 const UserSignUpWithContext = withContext(UserSignUp);
+
 // Connect UserSignIn to context 
 const UserSignInWithContext = withContext(UserSignIn);
+
 const UserSignOutWithContext = withContext(UserSignOut);
 const CreateCourseWithContext = withContext(CreateCourse);
 const UpdateCourseWithContext = withContext(UpdateCourse);
