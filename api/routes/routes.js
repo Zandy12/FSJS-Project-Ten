@@ -101,11 +101,10 @@ router.post('/users', [
     res.location('/');
 
     if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errorArray });
+      res.status(400).json({ errors: errorArray }).end();
     } else {
       const newUser = await User.create(user);
-      res.json(newUser);
-      res.status(201).end();
+      res.status(201).json(newUser).end();
     }
   }));
 

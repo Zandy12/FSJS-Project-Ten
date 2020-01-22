@@ -10,13 +10,19 @@ export default class Courses extends Component {
         this.state = {
             firstName: '',
             lastName: '',
-            content: []
+            content: [],
+            validated: false,
         }
         this.delete = this.delete.bind(this);
         this.update = this.update.bind(this);
     }
 
     componentDidMount() {
+
+      const {context} = this.props;
+
+      const authUser = context.authenticatedUser;
+
       axios.get(`http://localhost:5000/api/courses/${this.props.match.params.id}`)
       .then(res => {
           this.setState({
@@ -29,74 +35,49 @@ export default class Courses extends Component {
       .catch(error => {
       console.log("Error fetching and parsing data", error);
       });    
+
+      context.data.getCourse(this.props.match.params.id)
+      .then( course => {
+          if (course === null ) {
+              this.setState(() => {
+                  return { errors: [ 'Unable to connect to server.' ] };
+              });
+          } else {
+              if (authUser.emailAddress === course.User.emailAddress) {
+                this.setState({ validated: true });
+              }
+            }
+          })
+      .catch( err => {
+          console.log(err);
+          this.props.history.push('/error');
+      }) 
+
     }
 
     delete() {
-        const { context } = this.props;
-    
-        const authUser = context.authenticatedUser;
-    
-        const id = this.props.match.params.id;
 
-        context.data.getCourse(id)
-            .then( course => {
-                if (course === null ) {
-                    this.setState(() => {
-                        return { errors: [ 'Unable to connect to server.' ] };
-                    });
+        const {context} = this.props;
+
+        const authUser = context.authenticatedUser;
+
+        context.data.deleteCourse(this.props.match.params.id, authUser.emailAddress, context.password)
+            .then( errors => {
+                if (errors.length) {
+                    this.setState({errors});
                 } else {
-                    if (authUser.emailAddress === course.User.emailAddress) {
-                        context.data.deleteCourse(this.props.match.params.id, authUser.emailAddress, context.password)
-                            .then( errors => {
-                                if (errors.length) {
-                                this.setState({errors});
-                                } else {
-                                    console.log(`Course "${this.state.content.title}" has been successfully deleted.`);
-                                    this.props.history.push('/'); 
-                                } 
-                            })
-                            .catch( err => { // handle rejected promises
-                                console.log(err);
-                                this.props.history.push('/error'); // push to history stack
-                            });
-                        } else {
-                            this.props.history.push('/forbidden');
-                        }
-                    }
-                })
-            .catch( err => {
+                    console.log(`Course "${this.state.content.title}" has been successfully deleted.`);
+                    this.props.history.push('/'); 
+                } 
+            })
+            .catch( err => { // handle rejected promises
                 console.log(err);
-                this.props.history.push('/error');
-            }) 
+                this.props.history.push('/error'); // push to history stack
+            });
     }
 
     update() {
-
-        const { context } = this.props;
-    
-        const authUser = context.authenticatedUser;
-    
-        const id = this.props.match.params.id;
-        
-        context.data.getCourse(id)
-            .then( course => {
-                if (course === null ) {
-                    this.setState(() => {
-                        return { errors: [ 'Unable to connect to server.' ] };
-                    });
-                } else {
-                    if (authUser.emailAddress === course.User.emailAddress) {
-                        this.props.history.push(`/courses/${this.props.match.params.id}/update`); 
-                    } else {
-                        this.props.history.push('/forbidden');
-                    }
-                }
-            })
-            .catch( err => {
-                console.log(err);
-                this.props.history.push('/error');
-            }) 
-    
+        this.props.history.push(`/courses/${this.props.match.params.id}/update`); 
     }
 
     render() {
@@ -107,10 +88,12 @@ export default class Courses extends Component {
                 <div className="actions--bar">
                     <div className="bounds">
                         <div className="grid-100">
-                            <span>
-                                <Link className="button" onClick={this.update} to="#">Update Course</Link>
-                                <Link className="button" onClick={this.delete} to="#">Delete Course</Link>
-                            </span>
+                            { (this.state.validated) ? 
+                                    <span>
+                                        <Link className="button" onClick={this.update} to="#">Update Course</Link>
+                                        <Link className="button" onClick={this.delete} to="#">Delete Course</Link>
+                                    </span> : null
+                            } 
                             <Link className="button button-secondary" to="/">Return to List</Link>
                         </div>
                     </div>
