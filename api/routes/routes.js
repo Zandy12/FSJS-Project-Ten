@@ -18,12 +18,13 @@ function asyncHandler(cb){
 }
 
 /* Middleware to detect and validate current user logged in via authorization header (auth) */
-const authenticateUser = async (req, res, next) => {
+const authenticateUser = asyncHandler(async (req, res, next) => {
+  
   const credentials = auth(req);
 
   let message;
-
-  if (credentials) {
+  
+  if (JSON.stringify(credentials.name).length > 2) {
     // Mapping an email address from the database to req.body.emailAddress
     let user = await User.findAll({ where: {
       emailAddress: credentials.name
@@ -51,7 +52,7 @@ const authenticateUser = async (req, res, next) => {
   } else {
     next();
   } 
-};
+});
 
   /******************
  *   USERS ROUTES
