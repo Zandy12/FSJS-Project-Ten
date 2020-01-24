@@ -43,8 +43,10 @@ export default class Courses extends Component {
                   return { errors: [ 'Unable to connect to server.' ] };
               });
           } else {
-              if (authUser.emailAddress === course.User.emailAddress) {
-                this.setState({ validated: true });
+              if (authUser != null) {
+                if (authUser.emailAddress === course.User.emailAddress) {
+                    this.setState({ validated: true });
+                }
               }
             }
           })
