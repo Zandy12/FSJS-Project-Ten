@@ -1,6 +1,6 @@
 # FSJS-Project-Ten
 
-The is the last and final project of the www.teamtreehouse.com Full-Stack JavaScript techdegree program. In this project, we used the server-side REST API created in the last project to create a full-stack application using React.js to manage the client-side.
+This is the last and final project of the www.teamtreehouse.com Full-Stack JavaScript techdegree program. In this project, we used the server-side REST API created in the last project to create a full-stack application using React.js to manage the client-side.
 
 Note: To run this project on your computer, follow the instructions:
 1) Click "Clone or Download" to download the files.
